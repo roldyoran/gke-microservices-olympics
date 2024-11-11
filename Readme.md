@@ -32,16 +32,13 @@ Este ejemplo ilustra la gestión y escalado automático de servicios distribuido
 ![Arquitectura](./imgs/arquitectura.png)
 
 
-# Documentacion del software utilizado
-<!-- ir a la documentacion de la aplicacion markdown:
-https://github.com/EQUIPO/GKE-microservicios-olimpiadas/blob/main/README.md -->
+# Documentacion del software utilizado a detalle:
+https://github.com/roldyoran/GKE-microservicios-olimpiadas/blob/main/Documentacion.md
 
 
 # Pasos para implementar el proyecto
-
-## Paso 1: Crear el cluster de Kubernetes
-
 El numero de nodos recomendado es de 3 para poder gestionar la carga de tráfico de la competencia. Este proyecto utiliza un cluster de 6 nodos para que puedan ser escalados a mayor nivel de tráfico.
+
 1. Crear un cluster de Kubernetes en GCP:
 ```bash
 gcloud container clusters create proyecto2 --num-nodes=6 --region=us-west1-a --tags=allin,allout --machine-type=e2-medium --no-enable-network-policy --disk-size=25GB --disk-type pd-standard
