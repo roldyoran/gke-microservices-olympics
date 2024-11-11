@@ -1,0 +1,65 @@
+# consumer-winners
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer-winners
+  namespace: sopes1
+  labels:
+    app: kafka-consumer-winners
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer-winners
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer-winners
+    spec:
+      containers:
+        - name: kafka-consumer-winners
+          image: roldyoran/consumer-winners:seg7
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "0.3"
+          ports:
+            - containerPort: 8080
+          # Si necesitas volúmenes o configuración adicional, agrégalo aquí
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-consumer-winners-service
+  namespace: sopes1
+spec:
+  selector:
+    app: kafka-consumer-winners
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
+---
+# HorizontalPodAutoscaler para escalar el Deployment
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kafka-consumer-winners-hpa
+  namespace: sopes1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kafka-consumer-winners
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 35  

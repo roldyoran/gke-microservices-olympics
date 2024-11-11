@@ -1,0 +1,66 @@
+# consumer-losers
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-consumer-losers
+  namespace: sopes1 # Namespace donde crearás el usuario
+  labels:
+    app: kafka-consumer-losers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-consumer-losers
+  template:
+    metadata:
+      labels:
+        app: kafka-consumer-losers
+    spec:
+      containers:
+        - name: kafka-consumer-losers
+          image: roldyoran/consumer-losers:seg6
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "0.3"
+          ports:
+            - containerPort: 8080 # Cambia esto si tu aplicación usa un puerto diferente
+          # Si necesitas volúmenes o configuración adicional, agrégalo aquí
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-consumer-losers-service
+  namespace: sopes1
+spec:
+  selector:
+    app: kafka-consumer-losers
+  ports:
+    - protocol: TCP
+      port: 8080 # Cambia esto al puerto expuesto por tu aplicación
+      targetPort: 8080
+  type: ClusterIP
+
+---
+# HorizontalPodAutoscaler para escalar el Deployment
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: kafka-consumer-losers-hpa
+  namespace: sopes1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kafka-consumer-losers
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 35
+          
