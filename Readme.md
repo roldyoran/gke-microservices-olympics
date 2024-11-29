@@ -159,6 +159,7 @@ Redis: redis- service:6379
 - *Losers by faculty*: ```faculty:*faculty*:lost```
 - *Total students by faculty*: ```faculty:*faculty*:total```
 - *Count by disciplines where the winners come from (number)*: ```discipline:*no-discipline*:winners```
+- - 1 = Swimming, 2 = Athletics, 3 = Boxing
 
 14. Apply prometheus:
 ```bash

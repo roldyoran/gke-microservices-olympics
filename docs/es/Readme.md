@@ -155,6 +155,7 @@ Redis: redis-service:6379
 - *Perdedores por facultad*: ```facultad:*facultad*:perdidos```
 - *Total de alumnos por facultad*: ```facultad:*facultad*:total```
 - *Conteo por disciplinas de donde provienen los ganadores (numero)*: ```disciplina:*no-disciplina*:ganadores```
+- - 1 = Swimming, 2 = Athletics, 3 = Boxing
 
 14. Aplicar prometheus:
 ```bash
