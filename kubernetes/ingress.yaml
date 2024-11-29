@@ -11,14 +11,14 @@ spec:
   rules:
     - http:
         paths:
-          - path: /ingenieria
+          - path: /engineering
             pathType: Prefix
             backend:
               service:
                 name: rust-client-service
                 port:
                   number: 8080
-          - path: /agronomia
+          - path: /agronomy
             pathType: Prefix
             backend:
               service:

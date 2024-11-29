@@ -1,13 +1,12 @@
-## Documentación de los deployments y una breve explicación con ejemplos.
+# Documentation of the deployments and a brief explanation with examples.
 
-### Configuracion base de Kubernetes
-#### (Namespaces)
+## Kubernetes base configuration
+### Namespaces
 - namespace.yaml
 
-#### (Ingress)
+### Ingress
 - deploy.yaml
 - ingress.yaml
-
 
 ### Strimzi y Kafka
 - strimzi.yaml 
@@ -28,28 +27,29 @@
 - consumers.yaml (losers)
 - consumers2.yaml (winners)
 
-### Redis con Helm
+### Redis using Helm
 - helm install custom-redis ./custom-redis --namespace sopes1
 
-### Grafana con Helm    
+### Grafana using Helm    
 - helm install grafana grafana/grafana -f grafana-values.yaml
 
-### Prometheus con Helm
+### Prometheus using Helm
 - helm install prometheus prometheus-community/prometheus --namespace monitoring --create-namespace
 
 
-# Servicios en el cluster:
+# Images:
+## Cluster Services:
 Cada servicio tiene uno o unos pods que ejecutan el servicio.
-![imagen](./imgs/services.png)
+![imagen](../../imgs/services.png)
 
-# Pods en el cluster:
+## Cluster Pods:
 Cada pod tiene un container que ejecuta el servicio.
-![imagen](./imgs/image.png)
+![imagen](../../imgs/image.png)
 
-# Deployments en el cluster:
+## Deployments en el cluster:
 Cada deployment es una instancia de un pod.
-![imagen](./imgs/deploys.png)
+![imagen](../../imgs/deploys.png)
 
 
-# Horizontal Pod Autoscaler
-![imagen](./imgs/hpa.png)
+## Horizontal Pod Autoscaler
+![imagen](../../imgs/hpa.png)

@@ -29,16 +29,16 @@ func consumeMessages(brokers []string, topic string, stopChan chan struct{}, rdb
 		Topic:    topic,
 		MinBytes: 10e3,            // 10KB
 		MaxBytes: 10e6,            // 10MB
-		MaxWait:  1 * time.Second, // Espera máximo de 1 segundo por mensaje
+		MaxWait:  1 * time.Second, // Maximum wait of 1 second per message
 	})
 
 	defer reader.Close()
 
-	fmt.Printf("Consumiendo mensajes del tópico: %s\n", topic)
+	fmt.Printf("Consuming messages from topic: %s\n", topic)
 	for {
 		select {
 		case <-stopChan:
-			fmt.Printf("Deteniendo consumo de mensajes del tópico: %s\n", topic)
+			fmt.Printf("Stopping message consumption from topic: %s\n", topic)
 			return
 		default:
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -46,38 +46,33 @@ func consumeMessages(brokers []string, topic string, stopChan chan struct{}, rdb
 
 			msg, err := reader.ReadMessage(ctx)
 			if err != nil {
-				// Capturar error de timeout de forma general
+				// Handle timeout error generally
 				if errors.Is(err, context.DeadlineExceeded) {
-					// No hay más mensajes disponibles, espera un momento
+					// No more messages available, wait a moment
 					time.Sleep(2 * time.Second)
 					continue
 				}
-				log.Printf("Error inesperado al recibir mensaje: %v\n", err)
+				log.Printf("Unexpected error receiving message: %v\n", err)
 				continue
 			}
 
-			fmt.Printf("Mensaje recibido en el tópico %s: %s\n", msg.Topic, string(msg.Value))
+			fmt.Printf("Message received on topic %s: %s\n", msg.Topic, string(msg.Value))
 
-			// Procesar el mensaje y almacenar en Redis
+			// Process the message and store it in Redis
 			var student StudentMessage
-			// Simulamos la lectura del mensaje como string JSON
+			// Simulate reading the message as a JSON string
 			if err := json.Unmarshal([]byte(msg.Value), &student); err != nil {
-				log.Printf("Error al decodificar mensaje: %v\n", err)
+				log.Printf("Error decoding message: %v\n", err)
 				continue
 			}
 
-			// Actualizar conteos en Redis
-			if student.Status == "ganó" {
-				rdb.Incr(ctx, fmt.Sprintf("facultad:%s:ganadores", student.Faculty))
-				rdb.Incr(ctx, fmt.Sprintf("disciplina:%d:ganadores", student.Discipline))
+			// Update counts in Redis
+			if student.Status == "won" {
+				rdb.Incr(ctx, fmt.Sprintf("faculty:%s:winners", student.Faculty))
+				rdb.Incr(ctx, fmt.Sprintf("discipline:%d:winners", student.Discipline))
 			}
-			// no borrar el comentario de abajo
-			//else {
-			//	rdb.Incr(ctx, fmt.Sprintf("facultad:%s:ganadores", student.Faculty))
-			//  rdb.Incr(ctx, fmt.Sprintf("disciplina:%d:ganadores", student.Discipline))
-			//}
-			//añadir total de estudiantes por facultad sin importar si ganó o perdió
-			rdb.Incr(ctx, fmt.Sprintf("facultad:%s:total", student.Faculty))
+			// add total students per faculty regardless of whether they won or lost
+			rdb.Incr(ctx, fmt.Sprintf("faculty:%s:total", student.Faculty))
 		}
 	}
 }
@@ -86,9 +81,9 @@ func main() {
 	brokers := []string{"my-cluster-kafka-bootstrap:9092"}
 	stopChan := make(chan struct{})
 
-	// Configuración de Redis
+	// Redis configuration
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "redis-service:6379", // Nombre del servicio de Redis en Kubernetes
+		Addr: "redis-service:6379", // Redis service name in Kubernetes
 	})
 
 	go consumeMessages(brokers, "student-winners", stopChan, rdb)
@@ -97,7 +92,7 @@ func main() {
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 	<-sigchan
-	fmt.Println("Señal de interrupción recibida, cerrando consumidor...")
+	fmt.Println("Interrupt signal received, shutting down consumer...")
 	close(stopChan)
 	time.Sleep(2 * time.Second)
 }

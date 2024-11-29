@@ -16,10 +16,10 @@ import (
 
 var (
 	port           = flag.Int("port", 50052, "The server port")
-	kafkaBootstrap = "my-cluster-kafka-bootstrap:9092" // Dirección del clúster de Kafka
+	kafkaBootstrap = "my-cluster-kafka-bootstrap:9092" // Kafka cluster address
 )
 
-// Server is used to implement the gRPC server in the proto library
+// Server is used to implement the gRPC server defined in the proto library
 type server struct {
 	pb.UnimplementedStudentServer
 	writer *kafka.Writer
@@ -33,46 +33,46 @@ func (s *server) GetStudent(_ context.Context, in *pb.StudentRequest) (*pb.Stude
 	log.Printf("Student age: %d", in.GetAge())
 	log.Printf("Student discipline: %d", in.GetDiscipline())
 
-	// Determina si ganó o perdió
-	resultado := rand.Intn(2) // Genera un número aleatorio entre 0 y 1
+	// Determine if the student won or lost
+	result := rand.Intn(2) // Generate a random number between 0 and 1
 
-	var estado string
+	var status string
 	var topic string
 
-	// Definir el tópico basado en si el estudiante ganó o perdió
-	if resultado == 1 {
-		estado = "ganó"
-		topic = "student-winners" // Tópico para ganadores
+	// Define the topic based on whether the student won or lost
+	if result == 1 {
+		status = "won"
+		topic = "student-winners" // Topic for winners
 	} else {
-		estado = "perdió"
-		topic = "student-losers" // Tópico para perdedores
+		status = "lost"
+		topic = "student-losers" // Topic for losers
 	}
 
-	log.Printf("El estudiante: %s, %s", in.GetName(), estado)
+	log.Printf("Student: %s, %s", in.GetName(), status)
 
-	// Crear el mensaje a enviar a Kafka
-	studentInfo := fmt.Sprintf(`{"name": "%s", "status": "%s", "faculty": "%s", "discipline": %d}`, in.GetName(), estado, in.GetFaculty(), in.GetDiscipline())
+	// Create the message to send to Kafka
+	studentInfo := fmt.Sprintf(`{"name": "%s", "status": "%s", "faculty": "%s", "discipline": %d}`, in.GetName(), status, in.GetFaculty(), in.GetDiscipline())
 
-	// Generar una clave aleatoria
-	randomKey := strconv.Itoa(rand.Intn(1000000)) // Generar un número aleatorio como clave
+	// Generate a random key
+	randomKey := strconv.Itoa(rand.Intn(1000000)) // Generate a random number as the key
 
-	// Enviar el mensaje a Kafka
+	// Send the message to Kafka
 	err := s.writer.WriteMessages(context.Background(),
 		kafka.Message{
-			Key:   []byte(randomKey), // Usar la clave aleatoria
+			Key:   []byte(randomKey), // Use the random key
 			Value: []byte(studentInfo),
 			Topic: topic,
 		},
 	)
 
 	if err != nil {
-		log.Printf("Error al enviar mensaje a Kafka: %v", err)
+		log.Printf("Error sending message to Kafka: %v", err)
 		return nil, err
 	}
 
-	log.Printf("Mensaje enviado a Kafka (tópico: %s): %s", topic, studentInfo)
+	log.Printf("Message sent to Kafka (topic: %s): %s", topic, studentInfo)
 
-	// Devolver la respuesta gRPC
+	// Return the gRPC response
 	return &pb.StudentResponse{
 		Success: true,
 	}, nil
@@ -85,21 +85,21 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	// Crear un escritor de Kafka
+	// Create a Kafka writer
 	writer := kafka.NewWriter(kafka.WriterConfig{
 		Brokers:  []string{kafkaBootstrap},
-		Balancer: &kafka.LeastBytes{}, // Puedes usar otros balanceadores si lo prefieres
+		Balancer: &kafka.LeastBytes{}, // You can use other balancers if preferred
 	})
 
 	log.Println("Kafka writer created successfully")
 
 	defer writer.Close()
 
-	// Inicializar el servidor gRPC con el writer de Kafka
+	// Initialize the gRPC server with the Kafka writer
 	s := grpc.NewServer()
 	pb.RegisterStudentServer(s, &server{writer: writer})
 
-	log.Printf("Server atheltics started on port %d", *port)
+	log.Printf("Athletics server started on port %d", *port)
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)

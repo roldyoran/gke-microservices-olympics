@@ -15,9 +15,8 @@ struct StudentData {
     discipline: i32,
 }
 
-
 async fn handle_student(student: web::Json<StudentData>) -> impl Responder {
-    // Definir las URLs según la disciplina
+    // Define the server addresses based on the discipline
     let server_address = match student.discipline {
         1 => "http://go-server-service-swimming:50051", // swimming
         2 => "http://go-server-service-athletics:50052", // athletics
@@ -38,22 +37,21 @@ async fn handle_student(student: web::Json<StudentData>) -> impl Responder {
     });
 
     match client.get_student(request).await {
-            Ok(response) => {
-                println!("RESPONSE={:?}", response);
-                // Retornar un JSON con message vacío
-                HttpResponse::Ok().body(r#"{"message": ""}"#) // Devuelve un mensaje vacío
-            },
-            Err(e) => HttpResponse::InternalServerError().body(format!("gRPC call failed: {}", e)),
-        }
+        Ok(response) => {
+            println!("RESPONSE={:?}", response);
+            // Return a JSON with an empty message
+            HttpResponse::Ok().body(r#"{"message": ""}"#) // Returns an empty message
+        },
+        Err(e) => HttpResponse::InternalServerError().body(format!("gRPC call failed: {}", e)),
+    }
 }
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Starting server rust at http://localhost:8080");
+    println!("Starting Rust server at http://localhost:8080");
     HttpServer::new(|| {
         App::new()
-            .route("/ingenieria", web::post().to(handle_student))
+            .route("/engineering", web::post().to(handle_student))
     })
     .bind("0.0.0.0:8080")?
     .run()

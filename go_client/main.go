@@ -102,7 +102,7 @@ func main() {
 	flag.Parse() // Necesario para usar flag en el main
 
 	app := fiber.New()
-	app.Post("/agronomia", sendData)
+	app.Post("/agronomy", sendData)
 
 	err := app.Listen(":8080")
 	if err != nil {
